@@ -2,13 +2,9 @@ import cv2
 import imutils
 import time
 
-
-# model detection
 HOGCV = cv2.HOGDescriptor()
-HOGCV.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())  # przetrenowany model wykrycia ludzi
+HOGCV.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 
-
-# metoda detekcji
 def detect(frame):
     #bounding_box_cordinates, weights = HOGCV.detectMultiScale(frame, winStride = (1, 1), padding = (32, 43), scale = 3.37)
     #bounding_box_cordinates, weights = HOGCV.detectMultiScale(frame, winStride=(4, 4), padding=(3, 3), scale=3.40)
@@ -38,7 +34,6 @@ def detect_person(image_path):
         detect_image(image_path)
 
 
-# zdjęcia
 images = [cv2.imread('Images/Person_1.jpg'), cv2.imread('Images/Person_2.jpg'), cv2.imread('Images/Person_3.jpg'),
           cv2.imread('Images/Person_4.jpg'), cv2.imread('Images/Person_5.jpg')]
 for image in images:
