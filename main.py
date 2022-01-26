@@ -1,42 +1,47 @@
-from flask import Flask
-from flask_restful import Resource, Api
-from services.repository import get_movies
-
-app = Flask(__name__)
-api = Api(app)
+import cv2
+import imutils
+import time
 
 
-# class HelloWorld(Resource):
-#     def get(self):
-#         return get_movies()
+# model detection
+HOGCV = cv2.HOGDescriptor()
+HOGCV.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())  # przetrenowany model wykrycia ludzi
 
 
-class ShowMovies(Resource):
-    def get(self):
-        return get_movies_data()
+# metoda detekcji
+def detect(frame):
+    #bounding_box_cordinates, weights = HOGCV.detectMultiScale(frame, winStride = (1, 1), padding = (32, 43), scale = 3.37)
+    #bounding_box_cordinates, weights = HOGCV.detectMultiScale(frame, winStride=(4, 4), padding=(3, 3), scale=3.40)
+    bounding_box_cordinates, weights = HOGCV.detectMultiScale(frame, winStride= (1, 1), padding= (12, 17), scale=3.40)
+    person = 1
+    for x, y, w, h in bounding_box_cordinates:
+        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        cv2.putText(frame, f'person {person}', (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
+        person += 1
+    cv2.putText(frame, 'Status : Wykryto ', (40, 40), cv2.FONT_HERSHEY_DUPLEX, 0.8, (255, 0, 0), 2)
+    cv2.putText(frame, f'Wszyscy osoby : {person - 1}', (40, 70), cv2.FONT_HERSHEY_DUPLEX, 0.8, (255, 0, 0), 2)
+    cv2.imshow('output', frame)
+    return frame
 
 
-class ShowTags(Resource):
-    def get(self):
-        return get_tags_data()
+def detect_image(image):
+    image = imutils.resize(image, width=min(900, image.shape[1]))
+    result_image = detect(image)
+    cv2.imshow('output', result_image)
+    cv2.waitKey(1000)
+    cv2.destroyAllWindows()
 
 
-class ShowRatings(Resource):
-    def get(self):
-        return get_ratings_data()
+def detect_person(image_path):
+    if image_path is not None:
+        print(f'Otwarto obraz z {image_path}')
+        detect_image(image_path)
 
 
-class ShowLinks(Resource):
-    def get(self):
-        return get_links_data()
-
-
-api.add_resource(ShowMovies, '/movie')
-api.add_resource(ShowTags, '/tags')
-api.add_resource(ShowRatings, '/ratings')
-api.add_resource(ShowLinks, '/links')
-# api.add_resource(HelloWorld, '/')
-
-if __name__ == '__main__':
-    app.run(debug=True)
-## tyle endpointów ile plików na cs
+# zdjęcia
+images = [cv2.imread('Images/Person_1.jpg'), cv2.imread('Images/Person_2.jpg'), cv2.imread('Images/Person_3.jpg'),
+          cv2.imread('Images/Person_4.jpg'), cv2.imread('Images/Person_5.jpg')]
+for image in images:
+    start_point = time.time()
+    detect_person(image)
+    print("Czas na zbadanie %.3f sekund " % (time.time() - start_point))
